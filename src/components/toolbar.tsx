@@ -76,7 +76,7 @@ export function Toolbar({
   });
 
   return (
-    <div className="px-5">
+    <div className="max-w-[100vw] px-5">
       <div className="no-scrollbar w-full overflow-x-auto rounded-full border bg-white sm:overflow-visible">
         <div className="flex items-center p-2 gap-3 md:justify-center">
           <Button
