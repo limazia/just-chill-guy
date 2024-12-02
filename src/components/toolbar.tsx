@@ -76,9 +76,9 @@ export function Toolbar({
   });
 
   return (
-    <div className="max-w-[100vw] px-5">
+    <div className="px-5">
       <div className="no-scrollbar w-full overflow-x-auto rounded-full border bg-white sm:overflow-visible">
-        <div className="flex items-center space-x-4 px-4 py-2 text-2xl md:justify-center">
+        <div className="flex items-center p-2 gap-3 md:justify-center">
           <Button
             {...getRootProps()}
             variant="outline"
