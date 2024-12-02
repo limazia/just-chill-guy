@@ -20,12 +20,10 @@ export const FabricProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const initializeCanvas = useCallback(
     (canvasElement: HTMLCanvasElement) => {
-      // Dispose of existing canvas if it exists
       if (canvas) {
         canvas.dispose();
       }
 
-      // Create new canvas
       const newCanvas = new Canvas(canvasElement, {
         height: 500,
         width: 500,
