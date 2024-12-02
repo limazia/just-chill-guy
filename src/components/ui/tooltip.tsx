@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useRef } from "react";
+import { ReactNode, useState } from "react";
 
 interface Props {
   children: ReactNode;
@@ -8,29 +8,33 @@ interface Props {
 }
 
 export function ToolTip({ children, tooltip }: Props) {
-  const tooltipRef = useRef<HTMLSpanElement>(null);
-  const container = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   return (
-    <div
-      ref={container}
-      onMouseEnter={({ clientX }) => {
-        if (!tooltipRef.current || !container.current) return;
-        const { left } = container.current.getBoundingClientRect();
-
-        tooltipRef.current.style.left = clientX - left + "px";
-      }}
-      className="group relative inline-block"
-    >
-      {children}
+    <>
       {tooltip ? (
-        <span
-          ref={tooltipRef}
-          className="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition bg-black text-white text-xs p-1 rounded absolute bottom-full mb-2 whitespace-nowrap"
-        >
-          {tooltip}
-        </span>
-      ) : null}
-    </div>
+        <div className="relative inline-block">
+          <div
+            onMouseEnter={() => setIsVisible(true)}
+            onMouseLeave={() => setIsVisible(false)}
+            className="inline-block"
+          >
+            {children}
+          </div>
+
+          {isVisible && (
+            <div className="absolute z-10 px-3 py-2 text-sm text-white bg-gray-800 rounded-lg shadow-lg -translate-x-1/2 left-1/2 bottom-full mb-2 min-w-max hidden md:block">
+              {tooltip}
+
+              <div className="absolute left-1/2 -translate-x-1/2 -bottom-1">
+                <div className="border-4 border-transparent border-t-gray-800" />
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        children
+      )}
+    </>
   );
 }
