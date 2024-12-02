@@ -3,7 +3,15 @@
 import { useCallback } from "react";
 import { type Accept, useDropzone } from "react-dropzone";
 import { Canvas } from "fabric";
-import { CopyPlus, Download, FlipHorizontal, Trash2, Type } from "lucide-react";
+import {
+  CopyPlus,
+  Download,
+  FlipHorizontal,
+  FlipVertical,
+  Move,
+  Trash2,
+  Type,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PickerColor } from "@/components/ui/picker-color";
@@ -12,6 +20,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ToolbarProps {
   setBackgroundImage: (imageUrl: string) => Promise<Canvas | null>;
@@ -39,7 +56,7 @@ export function Toolbar({
       if (acceptedFiles.length > 0) {
         const dataUrl = URL.createObjectURL(acceptedFiles[0]);
         setBackgroundImage(dataUrl).catch((error) => {
-          console.error("Error setting background image:", error);
+          console.error("Erro ao definir imagem de fundo:", error);
         });
       }
     },
@@ -70,6 +87,7 @@ export function Toolbar({
             <input {...getInputProps()} />
             <CopyPlus className="size-4" />
           </Button>
+
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -81,21 +99,21 @@ export function Toolbar({
               />
             </PopoverTrigger>
             <PopoverContent
-              className="mt-3 w-fit p-4 bg-white rounded-md"
+              className="w-fit p-4 bg-white rounded-md"
               align="start"
             >
               <PickerColor
                 currentBackgroundColor={currentBackgroundColor}
                 name="color"
-                onChange={(color: string) => {
-                  return changeBackgroundColor(color);
-                }}
+                onChange={(color: string) => changeBackgroundColor(color)}
               />
             </PopoverContent>
           </Popover>
+
           <div className="h-5">
-            <div className="mx-1.5 h-full w-px bg-[#e5e5e5]"></div>
+            <div className="mx-1.5 h-full w-px bg-[#e5e5e5]" />
           </div>
+
           <Button
             onClick={addChillGuy}
             variant="outline"
@@ -105,18 +123,46 @@ export function Toolbar({
           >
             <img src="chillguy.png" className="size-6" />
           </Button>
-          <Button
-            onClick={() => flipImage("horizontal")}
-            variant="outline"
-            size={"icon"}
-            className="rounded-full shrink-0 hover:animate-jelly"
-            tooltip="Virar"
-          >
-            <FlipHorizontal className="size-4" />
-          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size={"icon"}
+                className="rounded-full shrink-0 hover:animate-jelly"
+                tooltip="Virar"
+              >
+                <Move className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 p-0" align="start">
+              <DropdownMenuGroup>
+                <DropdownMenuItem className="p-0">
+                  <Button
+                    onClick={() => flipImage("horizontal")}
+                    variant="ghost"
+                    className="w-full flex justify-start px-4 py-6"
+                  >
+                    <FlipHorizontal className="size-4" /> Horizontal
+                  </Button>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="p-0">
+                  <Button
+                    onClick={() => flipImage("vertical")}
+                    variant="ghost"
+                    className="w-full flex justify-start px-4 py-6"
+                  >
+                    <FlipVertical className="size-4" /> Vertical
+                  </Button>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <div className="h-5">
-            <div className="mx-1.5 h-full w-px bg-[#e5e5e5]"></div>
+            <div className="mx-1.5 h-full w-px bg-[#e5e5e5]" />
           </div>
+
           <Button
             onClick={addText}
             variant="outline"
@@ -126,9 +172,11 @@ export function Toolbar({
           >
             <Type className="size-4" />
           </Button>
+
           <div className="h-5">
-            <div className="mx-1.5 h-full w-px bg-[#e5e5e5]"></div>
+            <div className="mx-1.5 h-full w-px bg-[#e5e5e5]" />
           </div>
+
           <Button
             onClick={deleteSelectedObject}
             variant="outline"
@@ -138,9 +186,11 @@ export function Toolbar({
           >
             <Trash2 className="size-4 text-red-600" />
           </Button>
+
           <div className="h-5">
-            <div className="mx-1.5 h-full w-px bg-[#e5e5e5]"></div>
+            <div className="mx-1.5 h-full w-px bg-[#e5e5e5]" />
           </div>
+
           <Button
             onClick={downloadCanvas}
             variant="outline"
