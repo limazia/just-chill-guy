@@ -15,29 +15,26 @@ export default function HomePage() {
     downloadCanvas,
     changeBackgroundColor,
     currentBackgroundColor,
+    canFlipDelete,
   } = useFabric();
 
   return (
-    <>
-      <div className="px-2 space-y-10 min-h-screen items-center h-full flex-col flex justify-between">
-        <div></div>
-        <canvas
-          ref={canvasRef}
-          className="border rounded-3xl overflow-hidden "
+    <div className="py-12 space-y-5 min-h-screen items-center h-full flex-col flex justify-between">
+      <canvas ref={canvasRef} className="border rounded-3xl overflow-hidden" />
+
+      <div className="flex items-center flex-col">
+        <Toolbar
+          setBackgroundImage={setBackgroundImage}
+          addText={addText}
+          addChillGuy={addChillGuy}
+          flipImage={flipImage}
+          deleteSelectedObject={deleteSelectedObject}
+          downloadCanvas={downloadCanvas}
+          changeBackgroundColor={changeBackgroundColor}
+          currentBackgroundColor={currentBackgroundColor}
+          canFlipDelete={canFlipDelete}
         />
-        <div className="pt-10 pb-8 space-y-5 flex items-center flex-col">
-          <Toolbar
-            setBackgroundImage={setBackgroundImage}
-            addText={addText}
-            addChillGuy={addChillGuy}
-            flipImage={flipImage}
-            deleteSelectedObject={deleteSelectedObject}
-            downloadCanvas={downloadCanvas}
-            changeBackgroundColor={changeBackgroundColor}
-            currentBackgroundColor={currentBackgroundColor}
-          />
-        </div>
       </div>
-    </>
+    </div>
   );
 }
