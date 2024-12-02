@@ -138,7 +138,7 @@ export function Toolbar({
                 <Move className="size-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 p-0" align="start">
+            <DropdownMenuContent className="w-56 p-0" align="start" side="top">
               <DropdownMenuGroup>
                 <DropdownMenuItem className="p-0">
                   <Button
