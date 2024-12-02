@@ -1,4 +1,4 @@
-import React from "react";
+import { useState, useEffect, useRef } from "react";
 import { Canvas, FabricImage } from "fabric";
 import * as fabric from "fabric";
 
@@ -17,14 +17,16 @@ const DEFAULT_TEXT_OPTIONS = {
 };
 
 export function useFabric() {
-  const canvasRef = React.useRef<HTMLCanvasElement>(null);
-  const [canvas, setCanvas] = React.useState<Canvas | null>(null);
-  const [currentBackgroundColor, setCurrentBackgroundColor] =
-    React.useState<string>(DEFAULT_BACKGROUND_COLOR);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [canvas, setCanvas] = useState<Canvas | null>(null);
+  const [currentBackgroundColor, setCurrentBackgroundColor] = useState<string>(
+    DEFAULT_BACKGROUND_COLOR
+  );
+  const [history, setHistory] = useState<any[]>([]);
 
   const { isMobile, windowSize } = useWindow();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!canvasRef.current) return;
 
     const fabricCanvas = new Canvas(canvasRef.current, {
@@ -34,17 +36,49 @@ export function useFabric() {
 
     setCanvas(fabricCanvas);
     fabricCanvas.backgroundColor = currentBackgroundColor;
+    adjustCanvasSize(fabricCanvas, isMobile);
 
-    adjustCanvasSize(fabricCanvas, isMobile); // Initial size adjustment
+    const initialState = fabricCanvas.toJSON();
+    setHistory([initialState]);
 
     return () => {
       fabricCanvas.dispose();
     };
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    if (!canvas) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Delete") {
+        deleteSelectedObject();
+      }
+      if (event.ctrlKey && event.key === "z") {
+        undo();
+      }
+    };
+
+    const handleObjectModified = () => {
+      const newState = canvas.toJSON();
+      setHistory((prev) => [...prev, newState]);
+    };
+
+    canvas.on("object:modified", handleObjectModified);
+    canvas.on("object:added", handleObjectModified);
+    canvas.on("object:removed", handleObjectModified);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      canvas.off("object:modified", handleObjectModified);
+      canvas.off("object:added", handleObjectModified);
+      canvas.off("object:removed", handleObjectModified);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [canvas]);
+
+  useEffect(() => {
     if (canvas) {
-      adjustCanvasSize(canvas, isMobile); // Adjust size on window resize
+      adjustCanvasSize(canvas, isMobile);
       canvas.renderAll();
     }
   }, [isMobile, windowSize.width, windowSize.height]);
@@ -70,24 +104,20 @@ export function useFabric() {
     }
 
     if (windowSize.width! > 768) {
-      // Desktop: Adjust canvas width based on the image aspect ratio
       const imgWidth = (img.width! * CANVAS_DIMENSIONS.default) / img.height!;
       canvas.setDimensions({
         width: imgWidth,
         height: CANVAS_DIMENSIONS.default,
       });
     } else {
-      // Mobile: Adjust canvas dimensions to remain square or constrained
       const size = Math.min(
         windowSize.width! * CANVAS_DIMENSIONS.mobileMultiplier,
-
         CANVAS_DIMENSIONS.default
       );
 
       canvas.setDimensions({ width: size, height: size });
     }
 
-    // Scale the background image to cover the entire canvas
     const canvasWidth = canvas.width!;
     const canvasHeight = canvas.height!;
     const scaleX = canvasWidth / img.width!;
@@ -105,6 +135,9 @@ export function useFabric() {
 
     canvas.backgroundImage = img;
     canvas.renderAll();
+
+    const newState = canvas.toJSON();
+    setHistory((prev) => [...prev, newState]);
 
     return canvas;
   }
@@ -133,7 +166,7 @@ export function useFabric() {
     const img = await FabricImage.fromURL(imageUrl);
 
     if (!img) {
-      console.error("Failed to load image");
+      console.error("Falha ao carregar a imagem");
       return;
     }
 
@@ -170,14 +203,28 @@ export function useFabric() {
         : image.set("flipY", !image.flipY);
 
       canvas.renderAll();
+
+      const newState = canvas.toJSON();
+      setHistory((prev) => [...prev, newState]);
     }
+  }
+
+  function undo() {
+    if (!canvas || history.length <= 1) return;
+
+    const previousStates = history.slice(0, -1);
+    const lastState = previousStates[previousStates.length - 1];
+
+    canvas.loadFromJSON(lastState, () => {
+      canvas.renderAll();
+    });
+
+    setHistory(previousStates);
   }
 
   function deleteSelectedObject() {
     if (!canvas) return;
-
     const activeObject = canvas.getActiveObject();
-
     if (activeObject) {
       canvas.remove(activeObject);
       canvas.discardActiveObject();
@@ -207,6 +254,9 @@ export function useFabric() {
       setCurrentBackgroundColor(color);
       canvas.backgroundColor = color;
       canvas.renderAll();
+
+      const newState = canvas.toJSON();
+      setHistory((prev) => [...prev, newState]);
     }
   }
 
