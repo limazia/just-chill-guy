@@ -1,7 +1,6 @@
 "use client";
 
 import { useFabric } from "@/hooks/use-fabric";
-
 import { Toolbar } from "@/components/toolbar";
 
 export default function HomePage() {
@@ -19,10 +18,13 @@ export default function HomePage() {
   } = useFabric();
 
   return (
-    <div className="py-12 space-y-5 min-h-screen items-center h-full flex-col flex justify-between">
-      <canvas ref={canvasRef} className="border rounded-3xl overflow-hidden" />
+    <main className="w-full min-h-screen h-full flex items-center justify-center">
+      <div className="flex items-center flex-col space-y-6">
+        <canvas
+          ref={canvasRef}
+          className="border rounded-3xl overflow-hidden mx-auto"
+        />
 
-      <div className="flex items-center flex-col">
         <Toolbar
           setBackgroundImage={setBackgroundImage}
           addText={addText}
@@ -34,7 +36,15 @@ export default function HomePage() {
           currentBackgroundColor={currentBackgroundColor}
           canFlipDelete={canFlipDelete}
         />
+
+        <a
+          className="text-sm text-muted-foreground "
+          href="https://github.com/limazia"
+          target="_blank"
+        >
+          criado por @limazia
+        </a>
       </div>
-    </div>
+    </main>
   );
 }
