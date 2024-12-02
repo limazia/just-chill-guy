@@ -22,7 +22,7 @@ export function useFabric() {
   const [currentBackgroundColor, setCurrentBackgroundColor] = useState<string>(
     DEFAULT_BACKGROUND_COLOR
   );
-  const [history, setHistory] = useState<any[]>([]);
+  const [canFlipDelete, setCanFlipDelete] = useState(false);
 
   const { isMobile, windowSize } = useWindow();
 
@@ -38,9 +38,6 @@ export function useFabric() {
     fabricCanvas.backgroundColor = currentBackgroundColor;
     adjustCanvasSize(fabricCanvas, isMobile);
 
-    const initialState = fabricCanvas.toJSON();
-    setHistory([initialState]);
-
     return () => {
       fabricCanvas.dispose();
     };
@@ -48,33 +45,39 @@ export function useFabric() {
 
   useEffect(() => {
     if (!canvas) return;
-
+  
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Delete") {
-        deleteSelectedObject();
-      }
-      if (event.ctrlKey && event.key === "z") {
-        undo();
+      if (event.key === "Delete" || event.key === "Backspace") {
+        const activeObject = canvas.getActiveObject();
+        if (activeObject) {
+          canvas.remove(activeObject);
+          canvas.discardActiveObject();
+          canvas.renderAll();
+        }
       }
     };
-
-    const handleObjectModified = () => {
-      const newState = canvas.toJSON();
-      setHistory((prev) => [...prev, newState]);
+  
+    const updateButtonStates = () => {
+      const objects = canvas.getObjects();
+      const hasRelevantObject = objects.some(
+        (obj) => obj.type === "textbox" || obj.type === "image"
+      );
+      setCanFlipDelete(hasRelevantObject);
     };
-
-    canvas.on("object:modified", handleObjectModified);
-    canvas.on("object:added", handleObjectModified);
-    canvas.on("object:removed", handleObjectModified);
+  
+    canvas.on("object:added", updateButtonStates);
+    canvas.on("object:removed", updateButtonStates);
+    canvas.on("object:modified", updateButtonStates);
     window.addEventListener("keydown", handleKeyDown);
-
+  
     return () => {
-      canvas.off("object:modified", handleObjectModified);
-      canvas.off("object:added", handleObjectModified);
-      canvas.off("object:removed", handleObjectModified);
+      canvas.off("object:added", updateButtonStates);
+      canvas.off("object:removed", updateButtonStates);
+      canvas.off("object:modified", updateButtonStates);
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [canvas]);
+  
 
   useEffect(() => {
     if (canvas) {
@@ -99,7 +102,7 @@ export function useFabric() {
 
     const img = await FabricImage.fromURL(imageUrl);
     if (!img) {
-      alert("Failed to load image");
+      alert("Falha ao carregar a imagem");
       return null;
     }
 
@@ -135,9 +138,6 @@ export function useFabric() {
 
     canvas.backgroundImage = img;
     canvas.renderAll();
-
-    const newState = canvas.toJSON();
-    setHistory((prev) => [...prev, newState]);
 
     return canvas;
   }
@@ -192,7 +192,7 @@ export function useFabric() {
   }
 
   function flipImage(direction: "horizontal" | "vertical") {
-    if (!canvas) return;
+    if (!canvas || !canFlipDelete) return;
 
     const activeObject = canvas.getActiveObject();
 
@@ -203,27 +203,19 @@ export function useFabric() {
         : image.set("flipY", !image.flipY);
 
       canvas.renderAll();
+    } else if (activeObject && activeObject.type === "textbox") {
+      const text = activeObject as fabric.Textbox;
+      direction === "horizontal"
+        ? text.set("flipX", !text.flipX)
+        : text.set("flipY", !text.flipY);
 
-      const newState = canvas.toJSON();
-      setHistory((prev) => [...prev, newState]);
+      canvas.renderAll();
     }
   }
 
-  function undo() {
-    if (!canvas || history.length <= 1) return;
-
-    const previousStates = history.slice(0, -1);
-    const lastState = previousStates[previousStates.length - 1];
-
-    canvas.loadFromJSON(lastState, () => {
-      canvas.renderAll();
-    });
-
-    setHistory(previousStates);
-  }
-
   function deleteSelectedObject() {
-    if (!canvas) return;
+    if (!canvas || !canFlipDelete) return;
+
     const activeObject = canvas.getActiveObject();
     if (activeObject) {
       canvas.remove(activeObject);
@@ -254,9 +246,6 @@ export function useFabric() {
       setCurrentBackgroundColor(color);
       canvas.backgroundColor = color;
       canvas.renderAll();
-
-      const newState = canvas.toJSON();
-      setHistory((prev) => [...prev, newState]);
     }
   }
 
@@ -270,5 +259,6 @@ export function useFabric() {
     currentBackgroundColor,
     deleteSelectedObject,
     downloadCanvas,
+    canFlipDelete,
   };
 }

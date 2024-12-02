@@ -39,6 +39,7 @@ interface ToolbarProps {
   downloadCanvas: () => void;
   changeBackgroundColor: (color: string) => void;
   currentBackgroundColor: string;
+  canFlipDelete: boolean;
 }
 
 export function Toolbar({
@@ -50,6 +51,7 @@ export function Toolbar({
   downloadCanvas,
   changeBackgroundColor,
   currentBackgroundColor,
+  canFlipDelete,
 }: ToolbarProps) {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -125,12 +127,13 @@ export function Toolbar({
           </Button>
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+            <DropdownMenuTrigger asChild disabled={!canFlipDelete}>
               <Button
                 variant="outline"
                 size={"icon"}
                 className="rounded-full shrink-0 hover:animate-jelly"
                 tooltip="Virar"
+                disabled={!canFlipDelete}
               >
                 <Move className="size-4" />
               </Button>
@@ -183,6 +186,7 @@ export function Toolbar({
             size={"icon"}
             className="rounded-full shrink-0 hover:animate-jelly"
             tooltip="Excluir"
+            disabled={!canFlipDelete}
           >
             <Trash2 className="size-4 text-red-600" />
           </Button>
