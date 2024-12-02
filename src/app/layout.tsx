@@ -11,17 +11,19 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
   },
+  metadataBase: new URL("https://guy-chill.vercel.app"),
   openGraph: {
     title: "Apenas um cara tranquilo",
     description: "Apenas um gerador tranquilo de um cara tranquilo",
     url: "https://guy-chill.vercel.app",
-    images: ["opengraph-image.png"],
+    images: "/og-image.png",
     type: "website",
     locale: "pt_BR",
   },
   robots: {
-    index: true,
+    index: false,
     follow: true,
+    nocache: true,
   },
 };
 
